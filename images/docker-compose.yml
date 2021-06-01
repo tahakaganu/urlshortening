@@ -13,7 +13,7 @@ services:
       APP_DEBUG: "False"
       APP_PORT: 5000
       MONGODB_DATABASE: flaskdb
-      MONGODB_USERNAME: flaskuser
+      MONGODB_USERNAME: mongodbuser
       MONGODB_PASSWORD: mongodbpassword
       MONGODB_HOSTNAME: mongodb
     depends_on:
