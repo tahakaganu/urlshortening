@@ -8,7 +8,7 @@ api = Api(v1, title='Url Shorting API', version='v1', docs='/docs')
 
 api.add_namespace(url, path='/url')
 
-@api.error_handler
+@api.errorhandler
 def default_error_handler(e):
     message = 'An unhandled exception occured.'
     return {'message': message}, 500

@@ -3,8 +3,8 @@ services:
 
   flask:
     build:
-      context: app
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Flask_Dockerfile
     container_name: flask
     image: python:latest
     restart: unless-stopped
@@ -16,8 +16,6 @@ services:
       MONGODB_USERNAME: flaskuser
       MONGODB_PASSWORD: mongodbpassword
       MONGODB_HOSTNAME: mongodb
-    volumes:
-      - appdata:/var/www
     depends_on:
       - mongodb
     networks:
@@ -42,8 +40,8 @@ services:
 
   webserver:
     build:
-      context: nginx
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: NGINX_Dockerfile
     image: nginx:stable
     container_name: webserver
     restart: unless-stopped
@@ -70,8 +68,6 @@ networks:
 
 volumes:
   mongodbdata:
-    driver: local
-  appdata:
     driver: local
   nginxdata:
     driver: local

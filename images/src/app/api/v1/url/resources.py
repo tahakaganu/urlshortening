@@ -7,12 +7,28 @@ from werkzeug.utils import redirect
 from app import base62
 from . import api
 
-@api.route('/<url>', methods=['GET', 'POST'])
+@api.route('/<urlParam>', methods=['GET', 'POST'])
 class generateURL(Resource):
     @staticmethod
 
+
+    @api.doc('retrieve-url', responses={200: 'url generated'})
+    def get(urlParam):
+        """
+        Retrieve and Redirect
+        """
+        # Retrieve original id from base62url
+        id = base62.toBase10(urlParam)
+
+        return {"id": id}
+        # Get original url from database and redirect
+
+        originalURL = "http://www.google.com"
+        return redirect(originalURL, code = 302)
+
+
     @api.doc('generate-url', responses={200: 'url generated'})
-    def post(self, url):
+    def post(self, urlParam):
         """
         Generates new shortened URL 
         """
@@ -29,16 +45,3 @@ class generateURL(Resource):
         # Save to database and return url to user
 
 
-    @api.doc('retrieve-url', responses={200: 'url generated'})
-    def get(self, url):
-        """
-        Retrieve and Redirect
-        """
-
-        # Retrieve original id from base62url
-        id = base62.toBase10(url)
-
-
-        # Get original url from database and redirect
-        originalURL = "http://www.google.com"
-        return redirect(originalURL, code = 302)
