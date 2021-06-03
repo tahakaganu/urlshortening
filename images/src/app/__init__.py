@@ -1,50 +1,62 @@
 import os, socket
-from flask import Flask, request, jsonify
-from werkzeug.utils import redirect
+import validators
+from flask import Flask, request, redirect
 from flask_pymongo import PyMongo
 from .base62 import toBase62, toBase10
 
 App = Flask(__name__)
 
-App.config["MONGO_URI"] = 'mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + os.environ['MONGODB_PASSWORD'] + '@' + os.environ['MONGODB_HOSTNAME'] + ':27017/' + os.environ['MONGODB_DATABASE'] + '?authSource=admin' 
-mongo = PyMongo(App)
-db = mongo.db
-collection = db["urls"]
-
+try:
+    App.config["MONGO_URI"] = 'mongodb://' + os.environ['MONGODB_USERNAME'] + ':' + os.environ['MONGODB_PASSWORD'] + '@' + os.environ['MONGODB_HOSTNAME'] + ':27017/' + os.environ['MONGODB_DATABASE'] + '?authSource=admin' 
+    mongo = PyMongo(App)
+    db = mongo.db
+    collection = db["urls"]
+except Exception as e:
+    print("There was an error trying to connect to the Mongo Database. Is it running?")
+    print(e)
+    exit(-1)
 
 @App.route('/', methods=['POST'])
-def decode():
+def encode():
     """
     Retrieve and Redirect
     """
     
     # Retrieve data
     data = request.get_json(force=True)
-    print(data)
-    url = data['url']
+    url = data['url'].lower()
 
-    # Get max id from Database
-    response = collection.find_one(sort=[("seq", -1)])
+    if url[0:7] != "http://" and url[0:8] != "https://":
+        url = "http://" + url
 
-    # Generate new ID from database
-    if response == None:
-        id = 1
+    if url == None or url == '':
+        return {"message": "Invalid input format."}
     else:
-        id = int(response["seq"]) + 1
+        # Validate URL
+        if validators.url(url):
+            # Get max id from Database
+            response = collection.find_one(sort=[("seq", -1)])
 
-    # Generates new id
-    urlCode = toBase62(id)
+            # Generate new ID from database
+            if response == None:
+                id = 1
+            else:
+                id = int(response["seq"]) + 1
 
-    # Saves to database
-    collection.insert_one({"seq": id, "urlCode": urlCode, "url": url})
+            # Generates new id
+            urlCode = toBase62(id)
 
-    return {"new_url": "http://" + socket.gethostname() + "/" + urlCode}
-    # Get original url from database and redirect
+            # Saves to database
+            collection.insert_one({"seq": id, "urlCode": urlCode, "url": url})
+
+            return {"new_url": "http://" + socket.gethostname() + "/" + urlCode}
+        else:
+            return {"message": "Invalid URL provided."}
 
 
 
 @App.route('/<urlParam>', methods=['GET'])
-def post(urlParam):
+def decode(urlParam):
     """
     Decodes shortened URL and redirects
     """
